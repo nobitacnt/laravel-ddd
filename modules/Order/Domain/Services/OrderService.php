@@ -50,7 +50,7 @@ readonly class OrderService
 
         try {
 
-            $this->orderRepository->deleteOrder($id);
+            $this->orderRepository->delete($id);
         } catch (Throwable $e) {
             throw new DatabaseException('Failed to store order: ' . $e->getMessage());
         }

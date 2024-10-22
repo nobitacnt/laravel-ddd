@@ -35,11 +35,4 @@ interface IOrderRepository extends IBaseRepository
      * @param OrderEntity $orderEntity
      */
     public function updateOrder(OrderEntity $orderEntity): OrderEntity;
-
-    /**
-     * @param string $id
-     * @return void
-     */
-    public function deleteOrder(string $id): void;
-
 }

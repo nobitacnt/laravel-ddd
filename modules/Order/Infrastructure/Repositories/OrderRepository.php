@@ -1,10 +1,8 @@
 <?php
 
 namespace Modules\Order\Infrastructure\Repositories;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Modules\Order\Domain\Enums\OrderStatus;
-use Modules\Order\Infrastructure\EloquentModels\OrderItemModel;
 use Modules\Order\Infrastructure\Mappers\OrderMapper;
 use Modules\Shared\Infrastructure\BaseRepository;
 use Modules\Order\Domain\Entities\OrderEntity;
@@ -82,10 +80,5 @@ class OrderRepository extends BaseRepository implements IOrderRepository
         $this->update($orderEntity->id, $orderEntity->toArray());
 
         return $orderEntity;
-    }
-
-    public function deleteOrder(string $id): void
-    {
-        $this->model->find($id)->delete();
     }
 }
