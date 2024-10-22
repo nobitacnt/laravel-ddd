@@ -1,9 +1,9 @@
 <?php
 
 namespace Modules\Order\Domain\Services;
+use Modules\Order\Domain\Aggregate\OrderAggregate;
 use Modules\Shared\Domain\Exceptions\DatabaseException;
 use Modules\Shared\Domain\Exceptions\EntityNotFoundException;
-use Modules\Order\Domain\Entities\OrderEntity;
 use Modules\Order\Domain\Repositories\IOrderRepository;
 use Throwable;
 
@@ -15,7 +15,7 @@ readonly class OrderService
 
     /**
      * @param array $request
-     * @return array
+     * @return OrderAggregate[]
      * @throws DatabaseException
      */
     public function getOrders(array $request = []): array
@@ -57,28 +57,28 @@ readonly class OrderService
     }
 
     /**
-     * @param OrderEntity $orderEntity
-     * @return OrderEntity
+     * @param OrderAggregate $orderAggregate
+     * @return OrderAggregate|null
      * @throws DatabaseException
      */
-    public function storeOrder(OrderEntity $orderEntity): OrderEntity
+    public function storeOrder(OrderAggregate $orderAggregate): ?OrderAggregate
     {
         try {
-            return $this->orderRepository->storeOrder($orderEntity);
+            return $this->orderRepository->storeOrder($orderAggregate);
         } catch (Throwable $e) {
             throw new DatabaseException('Failed to store order: ' . $e->getMessage());
         }
     }
 
     /**
-     * @param OrderEntity $orderEntity
-     * @return OrderEntity
+     * @param OrderAggregate $orderAggregate
+     * @return OrderAggregate
      * @throws DatabaseException
      */
-    public function updateOrder(OrderEntity $orderEntity): OrderEntity
+    public function updateOrder(OrderAggregate $orderAggregate): OrderAggregate
     {
         try {
-            return $this->orderRepository->updateOrder($orderEntity);
+            return $this->orderRepository->updateOrder($orderAggregate);
 
         } catch (Throwable $e) {
             throw new DatabaseException('Failed to update order: ' . $e->getMessage());
@@ -87,11 +87,11 @@ readonly class OrderService
 
     /**
      * @param int $orderId
-     * @return OrderEntity
+     * @return OrderAggregate|null
      * @throws DatabaseException
      * @throws EntityNotFoundException
      */
-    public function findOrderById(int $orderId): OrderEntity
+    public function findOrderById(int $orderId): ?OrderAggregate
     {
         try {
             $existingOrder = $this->orderRepository->findOrderById($orderId);

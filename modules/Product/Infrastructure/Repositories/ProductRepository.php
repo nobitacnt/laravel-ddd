@@ -1,16 +1,13 @@
 <?php
 
 namespace Modules\Product\Infrastructure\Repositories;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Modules\Product\Domain\Aggregate\ProductAggregate;
 use Modules\Product\Domain\Enums\ProductStatus;
-use Modules\Product\Infrastructure\EloquentModels\SkuModel;
 use Modules\Product\Infrastructure\Mappers\ProductMapper;
 use Modules\Shared\Infrastructure\BaseRepository;
-use Modules\Product\Domain\Entities\ProductEntity;
 use Modules\Product\Domain\Repositories\IProductRepository;
 use Modules\Product\Infrastructure\EloquentModels\ProductModel;
-use Modules\Shared\Infrastructure\Mappers\CollectionMapper;
 
 class ProductRepository extends BaseRepository implements IProductRepository
 {
@@ -22,7 +19,7 @@ class ProductRepository extends BaseRepository implements IProductRepository
 
     /**
      * @param array $request
-     * @return ProductEntity[]
+     * @return ProductAggregate[]
      */
     public function getProducts(array $request = []): array
     {
@@ -31,17 +28,17 @@ class ProductRepository extends BaseRepository implements IProductRepository
         }
 
         $products = $this->query->get();
-        return CollectionMapper::toEntities($products);
+        return ProductMapper::eloquentCollectionToAggregates($products);
     }
 
     /**
      * @param int $id
-     * @return ProductEntity|null
+     * @return ProductAggregate|null
      */
-    public function findProductById(int $id): ?ProductEntity
+    public function findProductById(int $id): ?ProductAggregate
     {
         $product = $this->find($id);
-        return ($product instanceof ProductModel) ? $product->toEntity() : null;
+        return ($product instanceof ProductModel) ? ProductMapper::modelToAggregate($product) : null;
     }
 
     /**
@@ -54,34 +51,34 @@ class ProductRepository extends BaseRepository implements IProductRepository
     }
 
     /**
-     * @param ProductEntity $productEntity
-     * @return ProductEntity|null
+     * @param ProductAggregate $productAggregate
+     * @return ProductAggregate|null
      */
-    public function storeProduct(ProductEntity $productEntity): ?ProductEntity
+    public function storeProduct(ProductAggregate $productAggregate): ?ProductAggregate
     {
-        $product = DB::transaction(function() use ($productEntity) {
+        $product = DB::transaction(function() use ($productAggregate) {
             /** @var ProductModel $product */
-            $productInput = $productEntity->toArray();
+            $productInput = $productAggregate->getRoot()->toArray();
             $productInput['status']   = ProductStatus::NEW->value;
             $product      = $this->model->create($productInput);
             $product->skus()->createMany(
-                ProductMapper::skuEntitiesToArray($productEntity->getSkus())
+                ProductMapper::skuEntitiesToArray($productAggregate->getSkus())
             );
             return $product;
         });
 
-        return ($product instanceof ProductModel) ? $product->toEntity() : null;
+        return ($product instanceof ProductModel) ? ProductMapper::modelToAggregate($product) : null;
     }
 
     /**
-     * @param ProductEntity $productEntity
-     * @return ProductEntity
+     * @param ProductAggregate $productAggregate
+     * @return ProductAggregate
      */
-    public function updateProduct(ProductEntity $productEntity): ProductEntity
+    public function updateProduct(ProductAggregate $productAggregate): ProductAggregate
     {
-        $this->update($productEntity->id, $productEntity->toArray());
+        $this->update($productAggregate->getRoot()->id, $productAggregate->getRoot()->toArray());
 
-        return $productEntity;
+        return $productAggregate;
     }
 
     public function deleteProduct(string $id): void

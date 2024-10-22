@@ -29,7 +29,7 @@ class OrderController extends BaseController
             $orders   = $getOrdersQuery->handle($queryOrderDTO);
 
             return $this->sendResponse(
-                result: OrderMapper::entitiesToResponseOrderDTOs($orders),
+                result: OrderMapper::aggregatesToResponseOrderDTOs($orders),
             );
 
         } catch (Throwable $e) {
@@ -46,10 +46,10 @@ class OrderController extends BaseController
     public function detail(int $id, GetOrderDetailQuery $detailQuery): JsonResponse
     {
         try {
-            $order   = $detailQuery->handle($id);
+            $orderAggregate  = $detailQuery->handle($id);
 
             return $this->sendResponse(
-                result: OrderMapper::entityToResponseOrderDTO($order)->toArray(),
+                result: OrderMapper::aggregateToResponseOrderDTO($orderAggregate)->toArray(),
             );
 
         } catch (Throwable $e) {
@@ -67,11 +67,11 @@ class OrderController extends BaseController
     public function store(StoreOrderRequest $request, StoreOrderCommand $storeOrderCommand): JsonResponse
     {
         try {
-            $orderDTO    = OrderMapper::requestToDTO($request);
-            $orderEntity = $storeOrderCommand->handle($orderDTO);
+            $orderDTO       = OrderMapper::requestToDTO($request);
+            $orderAggregate = $storeOrderCommand->handle($orderDTO);
 
             return $this->sendResponse(
-                result: OrderMapper::entityToResponseOrderDTO($orderEntity)->toArray(),
+                result: OrderMapper::aggregateToResponseOrderDTO($orderAggregate)->toArray(),
                 httpCode: Response::HTTP_CREATED,
             );
 
@@ -92,9 +92,9 @@ class OrderController extends BaseController
     {
         try {
             $orderDTO    = OrderMapper::requestToDTO($request);
-            $orderEntity = $updateOrderCommand->handle($orderDTO);
+            $orderAggregate = $updateOrderCommand->handle($orderDTO);
             return $this->sendResponse(
-                OrderMapper::entityToResponseOrderDTO($orderEntity)->toArray()
+                result: OrderMapper::aggregateToResponseOrderDTO($orderAggregate)->toArray(),
             );
 
         } catch (Throwable $e) {

@@ -24,11 +24,11 @@ class UserController extends BaseController
     public function get(Request $request, GetUsersQuery $getUsersQuery): JsonResponse
     {
         try {
-            $userDTO = UserMapper::requestToDTO($request);
-            $users   = $getUsersQuery->handle($userDTO);
+            $userDTO        = UserMapper::requestToDTO($request);
+            $userAggregates = $getUsersQuery->handle($userDTO);
 
             return $this->sendResponse(
-                result: UserMapper::entitiesToResponseUserDTOs($users),
+                result: UserMapper::aggregatesToResponseUserDTOs($userAggregates),
             );
 
         } catch (Throwable $e) {
@@ -46,11 +46,11 @@ class UserController extends BaseController
     public function store(StoreUserRequest $request, StoreUserCommand $storeUserCommand): JsonResponse
     {
         try {
-            $userDTO    = UserMapper::requestToDTO($request);
-            $userEntity = $storeUserCommand->handle($userDTO);
+            $userDTO       = UserMapper::requestToDTO($request);
+            $userAggregate = $storeUserCommand->handle($userDTO);
 
             return $this->sendResponse(
-                result: UserMapper::entityToResponseUserDTO($userEntity)->toArray(),
+                result: UserMapper::aggregateToResponseUserDTO($userAggregate)->toArray(),
                 httpCode: Response::HTTP_CREATED,
             );
 
@@ -70,10 +70,10 @@ class UserController extends BaseController
     public function update(int $id, UpdateUserRequest $request, UpdateUserCommand $updateUserCommand): JsonResponse
     {
         try {
-            $userDTO    = UserMapper::requestToDTO($request);
-            $userEntity = $updateUserCommand->handle($userDTO);
+            $userDTO    = UserMapper::requestToDTO($request, $id);
+            $userAggregate = $updateUserCommand->handle($userDTO);
             return $this->sendResponse(
-                UserMapper::entityToResponseUserDTO($userEntity)->toArray()
+                UserMapper::aggregateToResponseUserDTO($userAggregate)->toArray()
             );
 
         } catch (Throwable $e) {

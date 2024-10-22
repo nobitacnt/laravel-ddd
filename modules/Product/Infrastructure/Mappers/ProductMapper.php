@@ -1,9 +1,11 @@
 <?php
 
 namespace Modules\Product\Infrastructure\Mappers;
+use Illuminate\Database\Eloquent\Collection;
+use Modules\Product\Domain\Aggregate\ProductAggregate;
 use Modules\Product\Domain\Entities\SkuEntity;
-use Modules\Product\Infrastructure\EloquentModels\SkuModel;
 use Modules\Product\Infrastructure\EloquentModels\ProductModel;
+use Modules\Product\Infrastructure\EloquentModels\SkuModel;
 use Modules\Product\Domain\Entities\ProductEntity;
 
 class ProductMapper {
@@ -14,20 +16,12 @@ class ProductMapper {
      */
     public static function modelToEntity(ProductModel $model): ProductEntity
     {
-        $productEntity = new ProductEntity(
+        return new ProductEntity(
             $model->id,
             $model->code,
             $model->status,
             $model->images
         );
-        $skuEntities = [];
-        foreach ($model->skus as $sku) {
-            $skuEntities[] = self::modelSkuToEntity($sku);
-        }
-
-        $productEntity->setSkus($skuEntities);
-
-        return $productEntity;
     }
 
     /**
@@ -57,5 +51,37 @@ class ProductMapper {
         }
 
         return $array;
+    }
+
+
+    /**
+     * @param ProductModel $model
+     * @return ProductAggregate
+     */
+    public static function modelToAggregate(ProductModel $model): ProductAggregate
+    {
+        $skus = [];
+        foreach ($model->skus as $sku) {
+            $skus[] = self::modelSkuToEntity($sku);
+        }
+        return new ProductAggregate(
+            self::modelToEntity($model),
+            $skus,
+        );
+    }
+
+
+    /**
+     * @param Collection $models
+     * @return ProductAggregate[]
+     */
+    public static function eloquentCollectionToAggregates(Collection $models): array
+    {
+        $productAggregates = [];
+        foreach ($models as $model) {
+            $productAggregates[] = self::modelToAggregate($model);
+        }
+
+        return $productAggregates;
     }
 }

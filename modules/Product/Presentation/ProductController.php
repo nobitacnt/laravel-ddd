@@ -25,11 +25,11 @@ class ProductController extends BaseController
     public function get(Request $request, GetProductsQuery $getProductsQuery): JsonResponse
     {
         try {
-            $queryProductDTO = ProductMapper::requestToQueryDTO($request);
-            $products   = $getProductsQuery->handle($queryProductDTO);
+            $queryProductDTO  = ProductMapper::requestToQueryDTO($request);
+            $productAggregates = $getProductsQuery->handle($queryProductDTO);
 
             return $this->sendResponse(
-                result: ProductMapper::entitiesToResponseProductDTOs($products),
+                result: ProductMapper::aggregatesToResponseProductDTOs($productAggregates),
             );
 
         } catch (Throwable $e) {
@@ -46,10 +46,10 @@ class ProductController extends BaseController
     public function detail(int $id, GetProductDetailQuery $detailQuery): JsonResponse
     {
         try {
-            $product   = $detailQuery->handle($id);
+            $productAggregate   = $detailQuery->handle($id);
 
             return $this->sendResponse(
-                result: ProductMapper::entityToResponseProductDTO($product)->toArray(),
+                result: ProductMapper::aggregateToResponseProductDTO($productAggregate)->toArray(),
             );
 
         } catch (Throwable $e) {
@@ -67,11 +67,11 @@ class ProductController extends BaseController
     public function store(StoreProductRequest $request, StoreProductCommand $storeProductCommand): JsonResponse
     {
         try {
-            $productDTO    = ProductMapper::requestToDTO($request);
-            $productEntity = $storeProductCommand->handle($productDTO);
+            $productDTO       = ProductMapper::requestToDTO($request);
+            $productAggregate = $storeProductCommand->handle($productDTO);
 
             return $this->sendResponse(
-                result: ProductMapper::entityToResponseProductDTO($productEntity)->toArray(),
+                result: ProductMapper::aggregateToResponseProductDTO($productAggregate)->toArray(),
                 httpCode: Response::HTTP_CREATED,
             );
 
@@ -91,10 +91,10 @@ class ProductController extends BaseController
     public function update(int $id, UpdateProductRequest $request, UpdateProductCommand $updateProductCommand): JsonResponse
     {
         try {
-            $productDTO    = ProductMapper::requestToDTO($request);
-            $productEntity = $updateProductCommand->handle($productDTO);
+            $productDTO       = ProductMapper::requestToDTO($request, $id);
+            $productAggregate = $updateProductCommand->handle($productDTO);
             return $this->sendResponse(
-                ProductMapper::entityToResponseProductDTO($productEntity)->toArray()
+                ProductMapper::aggregateToResponseProductDTO($productAggregate)->toArray()
             );
 
         } catch (Throwable $e) {

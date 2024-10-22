@@ -5,6 +5,7 @@ namespace Modules\User\Application\Mappers;
 use Illuminate\Http\Request;
 use Modules\User\Application\DTOs\ResponseUserDTO;
 use Modules\User\Application\DTOs\UserDTO;
+use Modules\User\Domain\Aggregate\UserAggregate;
 use Modules\User\Domain\Entities\UserEntity;
 use Modules\User\Domain\Factories\UserFactory;
 use Modules\Shared\Domain\Exceptions\FactoryException;
@@ -18,7 +19,7 @@ class UserMapper {
      */
     public static function dtoToEntity(UserDTO $userDTO): UserEntity
     {
-        return UserFactory::create(
+        return UserFactory::createUserEntity(
             $userDTO->id,
             $userDTO->name,
             $userDTO->email,
@@ -45,25 +46,26 @@ class UserMapper {
      * @param array $userEntities
      * @return ResponseUserDTO[]
      */
-    public static function entitiesToResponseUserDTOs(array $userEntities): array
+    public static function aggregatesToResponseUserDTOs(array $userEntities): array
     {
         $list = [];
         foreach ($userEntities as $userEntity) {
-            $list[] = self::entityToResponseUserDTO($userEntity);
+            $list[] = self::aggregateToResponseUserDTO($userEntity);
         }
         return $list;
     }
 
     /**
-     * @param UserEntity $userEntity
+     * @param UserAggregate $userAggregate
      * @return ResponseUserDTO
      */
-    public static function entityToResponseUserDTO(UserEntity $userEntity): ResponseUserDTO
+    public static function aggregateToResponseUserDTO(UserAggregate $userAggregate): ResponseUserDTO
     {
+        $root = $userAggregate->getRoot();
         return new ResponseUserDTO(
-            id: $userEntity->id,
-            name: $userEntity->name,
-            email: $userEntity->email,
+            id: $root->id,
+            name: $root->name,
+            email: $root->email,
         );
     }
 }

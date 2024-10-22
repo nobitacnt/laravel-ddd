@@ -4,9 +4,7 @@ namespace Modules\Order\Infrastructure\EloquentModels;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Modules\Order\Infrastructure\Mappers\OrderMapper;
 use Modules\Shared\Infrastructure\EloquentModels\Model;
-use Modules\Order\Domain\Entities\OrderEntity;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\User\Infrastructure\EloquentModels\UserModel;
 
@@ -56,13 +54,5 @@ class OrderModel extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(UserModel::class, 'user_id', 'id');
-    }
-
-    /**
-     * @return OrderEntity
-     */
-    public function toEntity(): OrderEntity
-    {
-        return OrderMapper::modelToEntity($this);
     }
 }

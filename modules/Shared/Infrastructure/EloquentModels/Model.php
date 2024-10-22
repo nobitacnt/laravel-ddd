@@ -22,9 +22,4 @@ abstract class Model extends BaseModel
      * @var array
      */
     protected $guarded = ['id'];
-
-    /**
-     * @return BaseEntity
-     */
-    abstract public function toEntity(): BaseEntity;
 }

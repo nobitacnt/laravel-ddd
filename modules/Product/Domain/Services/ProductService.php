@@ -1,9 +1,9 @@
 <?php
 
 namespace Modules\Product\Domain\Services;
+use Modules\Product\Domain\Aggregate\ProductAggregate;
 use Modules\Shared\Domain\Exceptions\DatabaseException;
 use Modules\Shared\Domain\Exceptions\EntityNotFoundException;
-use Modules\Product\Domain\Entities\ProductEntity;
 use Modules\Product\Domain\Repositories\IProductRepository;
 use Throwable;
 
@@ -15,7 +15,7 @@ readonly class ProductService
 
     /**
      * @param array $request
-     * @return array
+     * @return ProductAggregate[]
      * @throws DatabaseException
      */
     public function getProducts(array $request = []): array
@@ -57,28 +57,28 @@ readonly class ProductService
     }
 
     /**
-     * @param ProductEntity $productEntity
-     * @return ProductEntity
+     * @param ProductAggregate $productAggregate
+     * @return ProductAggregate
      * @throws DatabaseException
      */
-    public function storeProduct(ProductEntity $productEntity): ProductEntity
+    public function storeProduct(ProductAggregate $productAggregate): ProductAggregate
     {
         try {
-            return $this->productRepository->storeProduct($productEntity);
+            return $this->productRepository->storeProduct($productAggregate);
         } catch (Throwable $e) {
             throw new DatabaseException('Failed to store product: ' . $e->getMessage());
         }
     }
 
     /**
-     * @param ProductEntity $productEntity
-     * @return ProductEntity
+     * @param ProductAggregate $productAggregate
+     * @return ProductAggregate
      * @throws DatabaseException
      */
-    public function updateProduct(ProductEntity $productEntity): ProductEntity
+    public function updateProduct(ProductAggregate $productAggregate): ProductAggregate
     {
         try {
-            return $this->productRepository->updateProduct($productEntity);
+            return $this->productRepository->updateProduct($productAggregate);
 
         } catch (Throwable $e) {
             throw new DatabaseException('Failed to update product: ' . $e->getMessage());
@@ -87,11 +87,11 @@ readonly class ProductService
 
     /**
      * @param int $productId
-     * @return ProductEntity
+     * @return ProductAggregate
      * @throws DatabaseException
      * @throws EntityNotFoundException
      */
-    public function findProductById(int $productId): ProductEntity
+    public function findProductById(int $productId): ProductAggregate
     {
         try {
             $existingProduct = $this->productRepository->findProductById($productId);

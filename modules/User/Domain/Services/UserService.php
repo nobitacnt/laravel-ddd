@@ -3,7 +3,7 @@
 namespace Modules\User\Domain\Services;
 use Modules\Shared\Domain\Exceptions\DatabaseException;
 use Modules\Shared\Domain\Exceptions\EntityNotFoundException;
-use Modules\User\Domain\Entities\UserEntity;
+use Modules\User\Domain\Aggregate\UserAggregate;
 use Modules\User\Domain\Repositories\IUserRepository;
 use Throwable;
 
@@ -14,15 +14,14 @@ readonly class UserService
     ) {}
 
     /**
-     * @param string|null $email
-     * @param string|null $name
-     * @return array|UserEntity[]
+     * @param array $filter
+     * @return array|UserAggregate[]
      * @throws DatabaseException
      */
-    public function getUsers(string $email = null, string $name = null): array
+    public function getUsers(array $filter): array
     {
         try {
-            return $this->userRepository->getUsers($email, $name);
+            return $this->userRepository->getUsers($filter);
         } catch (Throwable $e) {
             throw new DatabaseException('Failed to fetch users: ' . $e->getMessage());
         }
@@ -58,28 +57,28 @@ readonly class UserService
     }
 
     /**
-     * @param UserEntity $userEntity
-     * @return UserEntity
+     * @param UserAggregate $userAggregate
+     * @return UserAggregate
      * @throws DatabaseException
      */
-    public function storeUser(UserEntity $userEntity): UserEntity
+    public function storeUser(UserAggregate $userAggregate): UserAggregate
     {
         try {
-            return $this->userRepository->storeUser($userEntity);
+            return $this->userRepository->storeUser($userAggregate);
         } catch (Throwable $e) {
             throw new DatabaseException('Failed to store user: ' . $e->getMessage());
         }
     }
 
     /**
-     * @param UserEntity $userEntity
-     * @return UserEntity
+     * @param UserAggregate $userAggregate
+     * @return UserAggregate
      * @throws DatabaseException
      */
-    public function updateUser(UserEntity $userEntity): UserEntity
+    public function updateUser(UserAggregate $userAggregate): UserAggregate
     {
         try {
-            return $this->userRepository->updateUser($userEntity);
+            return $this->userRepository->updateUser($userAggregate);
         } catch (Throwable $e) {
             throw new DatabaseException('Failed to update user: ' . $e->getMessage());
         }
@@ -87,11 +86,11 @@ readonly class UserService
 
     /**
      * @param int $userId
-     * @return UserEntity
+     * @return UserAggregate
      * @throws DatabaseException
      * @throws EntityNotFoundException
      */
-    public function findUserById(int $userId): UserEntity
+    public function findUserById(int $userId): UserAggregate
     {
         try {
             $existingUser = $this->userRepository->findUserById($userId);

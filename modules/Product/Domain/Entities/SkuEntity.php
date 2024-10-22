@@ -7,16 +7,11 @@ class SkuEntity extends BaseEntity
 {
     public function __construct(
         public ?int $id,
-        public int|string|null $productId,
+        public int|null $productId,
         public string|null $code,
         public string|null $image,
         public ?float $price,
     ) {}
-
-    public function changePrice(float $price): void
-    {
-        $this->price = $price;
-    }
 
     /**
      * @return array

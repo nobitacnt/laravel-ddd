@@ -3,22 +3,21 @@
 namespace Modules\User\Domain\Repositories;
 
 use Modules\Shared\Domain\IBaseRepository;
-use Modules\User\Domain\Entities\UserEntity;
+use Modules\User\Domain\Aggregate\UserAggregate;
 
 interface IUserRepository extends IBaseRepository
 {
     /**
-     * @param string|null $email
-     * @param string|null $name
-     * @return UserEntity[]
+     * @param array $filter
+     * @return UserAggregate[]
      */
-    public function getUsers(?string $email, ?string $name): array;
+    public function getUsers(array $filter): array;
 
     /**
      * @param int $id
-     * @return UserEntity|null
+     * @return UserAggregate|null
      */
-    public function findUserById(int $id): ?UserEntity;
+    public function findUserById(int $id): ?UserAggregate;
 
     /**
      * @param string $email
@@ -27,15 +26,15 @@ interface IUserRepository extends IBaseRepository
     public function emailExists(string $email): bool;
 
     /**
-     * @param UserEntity $userEntity
-     * @return UserEntity|null
+     * @param UserAggregate $userAggregate
+     * @return UserAggregate|null
      */
-    public function storeUser(UserEntity $userEntity): ?UserEntity;
+    public function storeUser(UserAggregate $userAggregate): ?UserAggregate;
 
     /**
-     * @param UserEntity $userEntity
+     * @param UserAggregate $userAggregate
      */
-    public function updateUser(UserEntity $userEntity): UserEntity;
+    public function updateUser(UserAggregate $userAggregate): UserAggregate;
 
     /**
      * @param string $id

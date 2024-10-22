@@ -6,14 +6,14 @@ class ResponseProductDTO
     /**
      * @param int|null $id
      * @param string $code
-     * @param SkuDTO[] $skuDTOs
+     * @param SkuDTO[] $skus
      * @param string|null $status
      * @param array|null $images
      */
     public function __construct(
         public ?int $id,
         public string $code,
-        public array $skuDTOs,
+        public array $skus,
         public ?string $status,
         public ?array $images,
     )
@@ -25,7 +25,7 @@ class ResponseProductDTO
         return [
             'id' => $this->id,
             'code' => $this->code,
-            'skuDTOs' => $this->skuDTOs,
+            'skus' => $this->skus,
             'status' => $this->status,
             'images' => $this->images,
         ];

@@ -3,21 +3,21 @@
 namespace Modules\Product\Domain\Repositories;
 
 use Modules\Shared\Domain\IBaseRepository;
-use Modules\Product\Domain\Entities\ProductEntity;
+use Modules\Product\Domain\Aggregate\ProductAggregate;
 
 interface IProductRepository extends IBaseRepository
 {
     /**
      * @param array $request
-     * @return ProductEntity[]
+     * @return ProductAggregate[]
      */
     public function getProducts(array $request = []): array;
 
     /**
      * @param int $id
-     * @return ProductEntity|null
+     * @return ProductAggregate|null
      */
-    public function findProductById(int $id): ?ProductEntity;
+    public function findProductById(int $id): ?ProductAggregate;
 
     /**
      * @param string $code
@@ -26,15 +26,15 @@ interface IProductRepository extends IBaseRepository
     public function codeExists(string $code): bool;
 
     /**
-     * @param ProductEntity $productEntity
-     * @return ProductEntity|null
+     * @param ProductAggregate $productAggregate
+     * @return ProductAggregate|null
      */
-    public function storeProduct(ProductEntity $productEntity): ?ProductEntity;
+    public function storeProduct(ProductAggregate $productAggregate): ?ProductAggregate;
 
     /**
-     * @param ProductEntity $productEntity
+     * @param ProductAggregate $productAggregate
      */
-    public function updateProduct(ProductEntity $productEntity): ProductEntity;
+    public function updateProduct(ProductAggregate $productAggregate): ProductAggregate;
 
     /**
      * @param string $id

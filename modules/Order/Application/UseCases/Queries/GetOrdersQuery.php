@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Order\Application\UseCases\Queries;
 use Modules\Order\Application\DTOs\QueryOrderDTO;
+use Modules\Order\Domain\Aggregate\OrderAggregate;
 use Modules\Order\Domain\Entities\OrderEntity;
 use Modules\Order\Domain\Services\OrderService;
 use Modules\Shared\Domain\Exceptions\DatabaseException;
@@ -12,7 +13,7 @@ readonly class GetOrdersQuery
 
     /**
      * @param QueryOrderDTO $queryOrderDTO
-     * @return OrderEntity[]
+     * @return OrderAggregate[]
      * @throws DatabaseException
      */
     public function handle(QueryOrderDTO $queryOrderDTO): array

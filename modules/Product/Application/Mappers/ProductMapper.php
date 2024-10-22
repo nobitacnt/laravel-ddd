@@ -8,6 +8,7 @@ use Modules\Product\Application\DTOs\ProductDTO;
 use Modules\Product\Application\DTOs\SkuDTO;
 use Modules\Product\Application\DTOs\QueryProductDTO;
 use Modules\Product\Application\DTOs\ResponseProductDTO;
+use Modules\Product\Domain\Aggregate\ProductAggregate;
 use Modules\Product\Domain\Entities\ProductEntity;
 use Modules\Product\Domain\Entities\SkuEntity;
 use Modules\Product\Domain\Factories\ProductFactory;
@@ -22,32 +23,43 @@ class ProductMapper {
      */
     public static function dtoToEntity(ProductDTO $productDTO): ProductEntity
     {
-        $skusIdentities = [];
-        foreach ($productDTO->skuDTOs as $skuDTO) {
-            $skusIdentities[] = self::skuDTOtoEntity($skuDTO);
-        }
-        return ProductFactory::create(
+        return ProductFactory::createProductEntity(
             $productDTO->id,
             $productDTO->code,
             $productDTO->status,
             $productDTO->images,
-            $skusIdentities
+        );
+    }
+
+
+    /**
+     * @param SkuDTO $itemDTO
+     * @return SkuEntity
+     * @throws FactoryException
+     */
+    public static function skuDTOtoEntity(SkuDTO $itemDTO): SkuEntity
+    {
+        return  ProductFactory::createSkuEntity (
+            id: $itemDTO->id,
+            productId: $itemDTO->productId,
+            code: $itemDTO->code,
+            image: $itemDTO->image,
+            price: $itemDTO->price,
         );
     }
 
     /**
-     * @param SkuDTO $skuDTO
-     * @return SkuEntity
+     * @param SkuDTO[] $itemDTOs
+     * @return SkuEntity[]
+     * @throws FactoryException
      */
-    public static function skuDTOtoEntity(SkuDTO $skuDTO): SkuEntity
+    public static function skuDTOsToEntities(array $itemDTOs): array
     {
-        return new SkuEntity(
-            id: $skuDTO->id,
-            productId: $skuDTO->productId,
-            code: $skuDTO->code,
-            image: $skuDTO->image,
-            price: $skuDTO->price,
-        );
+        $skuEntities = [];
+        foreach ($itemDTOs as $itemDTO) {
+            $skuEntities[] = self::skuDTOtoEntity($itemDTO);
+        }
+        return $skuEntities;
     }
 
     /**
@@ -58,6 +70,23 @@ class ProductMapper {
     public static function requestToDTO(Request $request, ?int $id = null): ProductDTO
     {
         $skus = (array)$request->get('skus');
+
+        return new ProductDTO(
+            id: $id,
+            code: $request->string('code'),
+            skus: self::makeSkuDTOFromRequest($skus, $id),
+            status: $request->string('status'),
+            images: $request->get('images')
+        );
+    }
+
+    /**
+     * @param array $skus
+     * @param $id
+     * @return array
+     */
+    public static function makeSkuDTOFromRequest(array $skus, $id): array
+    {
         $skuDTOs = [];
         foreach ($skus as $sku) {
             $skuDTOs[] = new SkuDTO(
@@ -68,13 +97,28 @@ class ProductMapper {
                 image: Arr::get($sku, 'image')
             );
         }
-        return new ProductDTO(
-            id: $id,
-            code: $request->string('code'),
-            skuDTOs: $skuDTOs,
-            status: $request->string('status'),
-            images: $request->get('images')
-        );
+
+        return $skuDTOs;
+    }
+
+    /**
+     * @param SkuEntity[] $skus
+     * @return array
+     */
+    public static function makeSkuDTOFromEntities(array $skus): array
+    {
+        $skuDTOs = [];
+        foreach ($skus as $sku) {
+            $skuDTOs[] = new SkuDTO(
+                id: $sku->id,
+                productId: $sku->productId,
+                code: $sku->code,
+                price: $sku->price,
+                image: $sku->image
+            );
+        }
+
+        return $skuDTOs;
     }
 
 
@@ -92,30 +136,31 @@ class ProductMapper {
     }
 
     /**
-     * @param array $productEntities
+     * @param ProductAggregate[] $productAggregates
      * @return ResponseProductDTO[]
      */
-    public static function entitiesToResponseProductDTOs(array $productEntities): array
+    public static function aggregatesToResponseProductDTOs(array $productAggregates): array
     {
         $list = [];
-        foreach ($productEntities as $productEntity) {
-            $list[] = self::entityToResponseProductDTO($productEntity);
+        foreach ($productAggregates as $productAggregate) {
+            $list[] = self::aggregateToResponseProductDTO($productAggregate);
         }
         return $list;
     }
 
     /**
-     * @param ProductEntity $productEntity
+     * @param ProductAggregate $productAggregate
      * @return ResponseProductDTO
      */
-    public static function entityToResponseProductDTO(ProductEntity $productEntity): ResponseProductDTO
+    public static function aggregateToResponseProductDTO(ProductAggregate $productAggregate): ResponseProductDTO
     {
+        $root = $productAggregate->getRoot();
         return new ResponseProductDTO(
-            id: $productEntity->id,
-            code: $productEntity->code,
-            skuDTOs: $productEntity->getSkus(),
-            status: $productEntity->status,
-            images: $productEntity->images
+            id: $root->id,
+            code: $root->code,
+            skus: self::makeSkuDTOFromEntities($productAggregate->getSkus()),
+            status: $root->status,
+            images: $root->images
         );
     }
 }

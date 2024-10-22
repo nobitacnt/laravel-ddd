@@ -1,10 +1,10 @@
 <?php
 
 namespace Modules\Order\Domain\Events;
-use Modules\Order\Domain\Entities\OrderEntity;
+use Modules\Order\Domain\Aggregate\OrderAggregate;
 
 class StoreOrderEvent
 {
-    public function __construct(public OrderEntity $orderEntity)
+    public function __construct(public OrderAggregate $orderAggregate)
     {}
 }

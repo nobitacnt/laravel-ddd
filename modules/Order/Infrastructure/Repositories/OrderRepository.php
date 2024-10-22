@@ -2,13 +2,12 @@
 
 namespace Modules\Order\Infrastructure\Repositories;
 use Illuminate\Support\Facades\DB;
+use Modules\Order\Domain\Aggregate\OrderAggregate;
 use Modules\Order\Domain\Enums\OrderStatus;
 use Modules\Order\Infrastructure\Mappers\OrderMapper;
 use Modules\Shared\Infrastructure\BaseRepository;
-use Modules\Order\Domain\Entities\OrderEntity;
 use Modules\Order\Domain\Repositories\IOrderRepository;
 use Modules\Order\Infrastructure\EloquentModels\OrderModel;
-use Modules\Shared\Infrastructure\Mappers\CollectionMapper;
 
 class OrderRepository extends BaseRepository implements IOrderRepository
 {
@@ -20,7 +19,7 @@ class OrderRepository extends BaseRepository implements IOrderRepository
 
     /**
      * @param array $request
-     * @return OrderEntity[]
+     * @return OrderAggregate[]
      */
     public function getOrders(array $request = []): array
     {
@@ -29,17 +28,17 @@ class OrderRepository extends BaseRepository implements IOrderRepository
         }
 
         $orders = $this->query->get();
-        return CollectionMapper::toEntities($orders);
+        return OrderMapper::eloquentCollectionToAggregates($orders);
     }
 
     /**
      * @param int $id
-     * @return OrderEntity|null
+     * @return OrderAggregate|null
      */
-    public function findOrderById(int $id): ?OrderEntity
+    public function findOrderById(int $id): ?OrderAggregate
     {
         $order = $this->find($id);
-        return ($order instanceof OrderModel) ? $order->toEntity() : null;
+        return ($order instanceof OrderModel) ? OrderMapper::modelToAggregate($order) : null;
     }
 
     /**
@@ -52,33 +51,36 @@ class OrderRepository extends BaseRepository implements IOrderRepository
     }
 
     /**
-     * @param OrderEntity $orderEntity
-     * @return OrderEntity|null
+     * @param OrderAggregate $orderAggregate
+     * @return OrderAggregate|null
      */
-    public function storeOrder(OrderEntity $orderEntity): ?OrderEntity
+    public function storeOrder(OrderAggregate $orderAggregate): ?OrderAggregate
     {
-        $order = DB::transaction(function() use ($orderEntity) {
+        $order = DB::transaction(function() use ($orderAggregate) {
             /** @var OrderModel $order */
-            $orderInput = $orderEntity->toArray();
+            $orderInput = $orderAggregate->getRoot()->toArray();
             $orderInput['status']   = OrderStatus::NEW->value;
+            $orderInput['amount']   = $orderAggregate->getAmount();
+            $orderInput['quantity'] = $orderAggregate->getQuantity();
             $order      = $this->model->create($orderInput);
             $order->orderItems()->createMany(
-                OrderMapper::orderItemEntitiesToArray($orderEntity->getItems())
+                OrderMapper::orderItemEntitiesToArray($orderAggregate->getItems())
             );
             return $order;
         });
 
-        return ($order instanceof OrderModel) ? $order->toEntity() : null;
+        return ($order instanceof OrderModel) ? OrderMapper::modelToAggregate($order) : null;
     }
 
     /**
-     * @param OrderEntity $orderEntity
-     * @return OrderEntity
+     * @param OrderAggregate $orderAggregate
+     * @return OrderAggregate
      */
-    public function updateOrder(OrderEntity $orderEntity): OrderEntity
+    public function updateOrder(OrderAggregate $orderAggregate): OrderAggregate
     {
-        $this->update($orderEntity->id, $orderEntity->toArray());
+        $root = $orderAggregate->getRoot();
+        $this->update($root->id, $root->toArray());
 
-        return $orderEntity;
+        return $orderAggregate;
     }
 }

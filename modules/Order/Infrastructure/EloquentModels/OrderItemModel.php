@@ -1,8 +1,6 @@
 <?php
 
 namespace Modules\Order\Infrastructure\EloquentModels;
-use Modules\Order\Domain\Entities\OrderItemEntity;
-use Modules\Order\Infrastructure\Mappers\OrderMapper;
 use Modules\Shared\Infrastructure\EloquentModels\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -34,13 +32,5 @@ class OrderItemModel extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(OrderModel::class, 'order_id', 'id');
-    }
-
-    /**
-     * @return OrderItemEntity
-     */
-    public function toEntity(): OrderItemEntity
-    {
-        return OrderMapper::modelItemToEntity($this);
     }
 }

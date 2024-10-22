@@ -20,16 +20,6 @@ class OrderItemEntity extends BaseEntity
         public ?int $quantity,
     ) {}
 
-    public function changeAmount(float $amount): void
-    {
-        $this->amount = $amount;
-    }
-
-    public function changeQuantity(int $quantity): void
-    {
-        $this->quantity = $quantity;
-    }
-
     /**
      * @return array
      */

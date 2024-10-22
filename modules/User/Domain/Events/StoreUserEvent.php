@@ -1,10 +1,10 @@
 <?php
 
 namespace Modules\User\Domain\Events;
-use Modules\User\Domain\Entities\UserEntity;
+use Modules\User\Domain\Aggregate\UserAggregate;
 
 class StoreUserEvent
 {
-    public function __construct(public UserEntity $userEntity)
+    public function __construct(public UserAggregate $userAggregate)
     {}
 }

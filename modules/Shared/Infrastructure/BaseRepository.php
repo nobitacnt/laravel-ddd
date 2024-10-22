@@ -73,7 +73,7 @@ abstract class BaseRepository implements IBaseRepository
 
     public function update($id, $param): void
     {
-        $this->updateWhere(['id', $id], $param);
+        $this->updateWhere(['id' => $id], $param);
     }
 
     public function updateWhere(array $cond, array $param): void

@@ -1,11 +1,13 @@
 <?php
 
 namespace Modules\User\Infrastructure\Repositories;
+use Illuminate\Support\Arr;
+use Modules\Shared\Domain\Exceptions\FactoryException;
 use Modules\Shared\Infrastructure\BaseRepository;
-use Modules\Shared\Infrastructure\Mappers\CollectionMapper;
-use Modules\User\Domain\Entities\UserEntity;
+use Modules\User\Domain\Aggregate\UserAggregate;
 use Modules\User\Domain\Repositories\IUserRepository;
 use Modules\User\Infrastructure\EloquentModels\UserModel;
+use Modules\User\Infrastructure\Mappers\UserMapper;
 
 class UserRepository extends BaseRepository implements IUserRepository
 {
@@ -16,32 +18,33 @@ class UserRepository extends BaseRepository implements IUserRepository
     }
 
     /**
-     * @param string|null $email
-     * @param string|null $name
-     * @return UserEntity[]
+     * @param array $filter
+     * @return array|UserAggregate[]
+     * @throws FactoryException
      */
-    public function getUsers(?string $email, ?string $name): array
+    public function getUsers(array $filter): array
     {
-        if($email) {
+        if($email = Arr::get($filter, 'email')) {
             $this->query->where('email', $email);
         }
 
-        if($name) {
+        if($name = Arr::get($filter, 'name')) {
             $this->query->where('name', 'LIKE', "%$name%");
         }
 
         $users = $this->query->get();
-        return CollectionMapper::toEntities($users);
+        return UserMapper::eloquentCollectionToAggregates($users);
     }
 
     /**
      * @param int $id
-     * @return UserEntity|null
+     * @return UserAggregate|null
+     * @throws FactoryException
      */
-    public function findUserById(int $id): ?UserEntity
+    public function findUserById(int $id): ?UserAggregate
     {
         $user = $this->find($id);
-        return ($user instanceof UserModel) ? $user->toEntity() : null;
+        return ($user instanceof UserModel) ? UserMapper::modelToAggregate($user) : null;
     }
 
     /**
@@ -54,24 +57,30 @@ class UserRepository extends BaseRepository implements IUserRepository
     }
 
     /**
-     * @param UserEntity $userEntity
-     * @return UserEntity|null
+     * @param UserAggregate $userAggregate
+     * @return UserAggregate|null
+     * @throws FactoryException
      */
-    public function storeUser(UserEntity $userEntity): ?UserEntity
+    public function storeUser(UserAggregate $userAggregate): ?UserAggregate
     {
-        $user = $this->model->create($userEntity->toArray());
-        return ($user instanceof UserModel) ? $user->toEntity() : null;
+        $input = $userAggregate->getRoot()->toArray();
+        $user  = $this->model->create($input);
+        return ($user instanceof UserModel) ? UserMapper::modelToAggregate($user) : null;
     }
 
     /**
-     * @param UserEntity $userEntity
-     * @return UserEntity
+     * @param UserAggregate $userAggregate
+     * @return UserAggregate
      */
-    public function updateUser(UserEntity $userEntity): UserEntity
+    public function updateUser(UserAggregate $userAggregate): UserAggregate
     {
-        $this->update($userEntity->id, $userEntity->toArray());
+        $root = $userAggregate->getRoot();
+        $this->update($root->id, [
+            'name' => $root->name,
+            'email' => $root->email,
+        ]);
 
-        return $userEntity;
+        return $userAggregate;
     }
 
     public function deleteUser(string $id): void

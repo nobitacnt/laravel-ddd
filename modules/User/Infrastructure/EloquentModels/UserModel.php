@@ -12,6 +12,16 @@ use Modules\User\Domain\ValueObjects\Name;
 use Modules\Shared\Domain\Exceptions\IncorrectEmailFormatException;
 use Modules\Shared\Domain\Exceptions\ValueRequiredException;
 
+/**
+ * Class User
+ * @package Modules\User\Infrastructure\EloquentModels\UserModel
+ *
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property string $password
+ * */
+
 class UserModel extends Model
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
